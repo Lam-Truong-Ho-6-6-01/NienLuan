@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { connect } from 'react-redux';
 import './UserManage.scss';
-import { getAllUser } from '../../services/userService'
+import { getAllUser, createNewUserService } from '../../services/userService'
 import ModalUser from './ModalUser';
 class UserManage extends Component {
     constructor(props) {
@@ -14,6 +14,9 @@ class UserManage extends Component {
     }
 
     async componentDidMount() {
+        await this.getAllUsersFromReact();
+    }
+    getAllUsersFromReact = async () => {
         let response = await getAllUser('ALL');
         if (response && response.errCode === 0) {
             this.setState({
@@ -33,8 +36,22 @@ class UserManage extends Component {
             isOpenModalUser: !this.state.isOpenModalUser,
         })
     }
+    createNewUser = async (data) => {
+        try {
+            let response = await createNewUserService(data)
+            if (response && response.errCode !== 0) {
+                alert(response.errMessage)
+            } else {
+                await this.getAllUsersFromReact()
+                this.setState({
+                    isOpenModalUser: false
+                })
+            }
+        } catch (e) {
+            console.log(e)
+        }
 
-
+    }
 
 
     render() {
@@ -45,6 +62,7 @@ class UserManage extends Component {
                 <ModalUser
                     isOpen={this.state.isOpenModalUser}
                     toggleFromParent={this.toogleUserModal}
+                    createNewUser={this.createNewUser}
                 />
                 <div className='title text-center'>
                     Manage user With TruongHo
@@ -56,32 +74,35 @@ class UserManage extends Component {
                 </div>
                 <div className='user-table mt-3 mx-1'>
                     <table id="customers">
-                        <tr>
-                            <th>Email</th>
-                            <th>Fist Name</th>
-                            <th>Last Name</th>
-                            <th>Address</th>
-                            <th>Actions</th>
-                        </tr>
-
-                        {arrUsers && arrUsers.map((item, index) => {
-                            return (
-                                <tr>
-                                    <td>{item.email}</td>
-                                    <td>{item.firstName}</td>
-                                    <td>{item.lastName}</td>
-                                    <td>{item.address}</td>
-                                    <td>
-                                        <button className='btn-edit'><i className="fas fa-pencil-alt"></i></button>
-                                        <button className='btn-delete'><i className="fas fa-trash-alt"></i></button>
-                                    </td>
+                        <tbody>
 
 
-                                </tr>
-                            )
-                        })
-                        }
+                            <tr>
+                                <th>Email</th>
+                                <th>Fist Name</th>
+                                <th>Last Name</th>
+                                <th>Address</th>
+                                <th>Actions</th>
+                            </tr>
 
+                            {arrUsers && arrUsers.map((item, index) => {
+                                return (
+                                    <tr>
+                                        <td>{item.email}</td>
+                                        <td>{item.firstName}</td>
+                                        <td>{item.lastName}</td>
+                                        <td>{item.address}</td>
+                                        <td>
+                                            <button className='btn-edit'><i className="fas fa-pencil-alt"></i></button>
+                                            <button className='btn-delete'><i className="fas fa-trash-alt"></i></button>
+                                        </td>
+
+
+                                    </tr>
+                                )
+                            })
+                            }
+                        </tbody>
 
                     </table>
                 </div>
